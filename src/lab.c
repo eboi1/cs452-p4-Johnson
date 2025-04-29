@@ -1,15 +1,28 @@
+/**
+ * This file provides the implementation of the functions defined in lab.h. It includes
+ * thread-safe operations for elements in a queue. 
+ * 
+ * @author Eric Johnson
+ */
+
 #include "lab.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * Node structure for the linked list.
+ */
 typedef struct node
 {
     void *data;
     struct node *next;
 } node_t;
 
+/**
+ *  Thread-safe queue structure.
+ */
 struct queue
 {
     node_t *front;
@@ -22,8 +35,19 @@ struct queue
     pthread_cond_t not_full;
 };
 
+/**
+ * Initializes a queue with specified capacity.
+ * 
+ * @param capacity The maximum capacity.
+ * @return Pointer to the initialized queue.
+ */
 queue_t queue_init(int capacity)
 {
+    if (capacity <= 0) {
+        fprintf(stderr, "Error: Invalid queue size.\n");
+        exit(EXIT_FAILURE);
+    }
+
     queue_t q = (queue_t)malloc(sizeof(struct queue));
     if (!q)
     {
@@ -40,6 +64,11 @@ queue_t queue_init(int capacity)
     return q;
 }
 
+/**
+ * Destroys queue and frees all allocated memory.
+ * 
+ * @param q Pointer to the queue to be destroyed.
+ */
 void queue_destroy(queue_t q)
 {
     if (!q)
@@ -65,6 +94,12 @@ void queue_destroy(queue_t q)
     free(q);
 }
 
+/**
+ * Enqueues data into the queue.
+ * 
+ * @param q Pointer to the queue.
+ * @param data Pointer to the data to be enqueued.
+ */
 void enqueue(queue_t q, void *data)
 {
     if (!q || !data)
@@ -108,6 +143,12 @@ void enqueue(queue_t q, void *data)
     pthread_mutex_unlock(&q->lock);
 }
 
+/**
+ * Dequeues data from the queue.
+ * 
+ * @param q Pointer to the queue.
+ * @return Pointer to the dequeued data.
+ */
 void *dequeue(queue_t q)
 {
     if (!q)
@@ -142,6 +183,12 @@ void *dequeue(queue_t q)
     return data;
 }
 
+/**
+ * Peeks at the front of the queue without removing it.
+ * 
+ * @param q Pointer to the queue.
+ * @return Pointer to the data at the front of the queue.
+ */
 void queue_shutdown(queue_t q)
 {
     if (!q)
@@ -154,6 +201,12 @@ void queue_shutdown(queue_t q)
     pthread_mutex_unlock(&q->lock);
 }
 
+/**
+ *  Checks if queue is empty.
+ * 
+ * @param q The queue.
+ * @return True if empty, else false.
+ */
 bool is_empty(queue_t q)
 {
     if (!q)
@@ -166,6 +219,12 @@ bool is_empty(queue_t q)
     return empty;
 }
 
+/**
+ *  Checks if queue is in shutdown mode.
+ * 
+ * @param q The queue.
+ * @return True if in shutdown, else false.
+ */
 bool is_shutdown(queue_t q)
 {
     if (!q)
